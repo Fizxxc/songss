@@ -6,14 +6,14 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https:/
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCSKBHxE8YIDFsEW-8TpGSOHuZJ5CliIkg",
-  authDomain: "fingerpinauth.firebaseapp.com",
-  databaseURL: "https://fingerpinauth-default-rtdb.firebaseio.com",
-  projectId: "fingerpinauth",
-  storageBucket: "fingerpinauth.firebasestorage.app",
-  messagingSenderId: "395896869935",
-  appId: "1:395896869935:web:f05223a2c140bd88d662da",
-  measurementId: "G-6S5NHHLFW0"
+  apiKey: "AIzaSyDpv9uvfdUPKnyBKESB2fDEUwuDn9Nzmtg",
+  authDomain: "orderr-625c2.firebaseapp.com",
+  databaseURL: "https://orderr-625c2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "orderr-625c2",
+  storageBucket: "orderr-625c2.firebasestorage.app",
+  messagingSenderId: "891679772111",
+  appId: "1:891679772111:web:1b5999b967bd17c87356ba",
+  measurementId: "G-06W3BTP7HH"
 };
 
 const app = initializeApp(firebaseConfig);
