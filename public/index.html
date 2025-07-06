@@ -1,45 +1,98 @@
-<!-- /public/index.html -->
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Request Lagu</title>
-  <script src="firebase.js" type="module"></script>
+  <meta charset="UTF-8" />
+  <title>🎶 Request Lagu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="firebase.js" type="module"></script>
+  <style>
+    body {
+      background: url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+    }
+
+    ::placeholder {
+      color: #ccc;
+    }
+  </style>
 </head>
-<body class="bg-black text-white p-4">
-  <h1 class="text-2xl font-bold mb-4">🎶 Request Lagu</h1>
-  <input id="search" type="text" placeholder="Cari lagu..." class="w-full p-2 text-black mb-2">
-  <button onclick="searchSpotify()" class="bg-green-500 px-4 py-2">Cari</button>
-  <ul id="results" class="mt-4 space-y-2"></ul>
+<body class="text-white min-h-screen flex flex-col items-center justify-center p-4">
+
+  <div class="glass p-6 max-w-xl w-full">
+    <h1 class="text-3xl font-bold mb-4 text-center">🎶 Request Lagu</h1>
+
+    <input id="search" type="text" placeholder="Cari lagu di Spotify..."
+      class="w-full p-3 rounded bg-white/10 border border-white/20 text-white mb-4 focus:outline-none" />
+
+    <button id="searchBtn" class="bg-red-500 hover:bg-red-600 transition px-4 py-2 w-full rounded text-white font-semibold">
+      🔍 Cari Lagu
+    </button>
+
+    <ul id="results" class="mt-6 space-y-4"></ul>
+  </div>
 
   <script type="module">
+    const searchInput = document.getElementById('search');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsContainer = document.getElementById('results');
+    const db = window.firebaseDB;
+
+    searchBtn.addEventListener('click', searchSpotify);
+
     async function searchSpotify() {
-      const query = document.getElementById('search').value;
+      const query = searchInput.value.trim();
+      if (!query) return alert("Masukkan kata kunci lagu!");
+
       const res = await fetch(`/api/spotify.js?q=${encodeURIComponent(query)}`);
       const data = await res.json();
-      const results = document.getElementById('results');
-      results.innerHTML = '';
+
+      resultsContainer.innerHTML = '';
+
+      if (!data.tracks || !data.tracks.items.length) {
+        resultsContainer.innerHTML = "<p class='text-center text-sm text-red-200'>Tidak ada hasil ditemukan.</p>";
+        return;
+      }
+
       data.tracks.items.forEach(track => {
+        const title = track.name;
+        const artist = track.artists[0]?.name || "Unknown";
+
         const li = document.createElement('li');
+        li.className = "glass p-4 flex justify-between items-center";
+
         li.innerHTML = `
-          <div class="p-2 border rounded">
-            <strong>${track.name}</strong> - ${track.artists.map(a => a.name).join(', ')}
-            <button class="bg-blue-500 ml-2 px-2 py-1" onclick='request("${track.name}", "${track.artists[0].name}")'>Request</button>
+          <div>
+            <p class="font-semibold text-lg">${title}</p>
+            <p class="text-sm text-gray-200">by ${artist}</p>
           </div>
+          <button class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white" data-title="${title}" data-artist="${artist}">
+            🎧 Request
+          </button>
         `;
-        results.appendChild(li);
+
+        const btn = li.querySelector("button");
+        btn.addEventListener('click', () => requestSong(title, artist));
+
+        resultsContainer.appendChild(li);
       });
     }
 
-    function request(title, artist) {
-      const db = window.firebaseDB;
+    function requestSong(title, artist) {
       window.firebasePush(window.firebaseRef(db, 'requests/'), {
         title,
         artist,
         time: Date.now()
       });
-      alert("Lagu direquest!");
+      alert(`Lagu "${title}" oleh ${artist} berhasil direquest!`);
     }
   </script>
 </body>
