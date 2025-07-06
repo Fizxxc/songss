@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Admin</title>
+  <script src="firebase.js" type="module"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-4">
+  <h1 class="text-2xl mb-4">🔐 Login Admin</h1>
+  <input id="email" placeholder="Email" class="text-black p-2 mb-2 w-full">
+  <input id="password" type="password" placeholder="Password" class="text-black p-2 mb-2 w-full">
+  <button id="loginBtn" class="bg-green-600 px-4 py-2">Login</button>
+
+  <script type="module">
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await window.firebaseLogin(window.firebaseAuth, email, password);
+        location.href = "dashboard.html";
+      } catch (e) {
+        alert("Login gagal: " + e.message);
+      }
+    });
+  </script>
+</body>
+</html>
