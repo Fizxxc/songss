@@ -33,12 +33,11 @@
 
       <div class="flex items-center gap-2 ml-auto">
         <label for="volume" class="text-sm">🔊 Volume</label>
-        <input type="range" id="volume" min="0" max="100" value="70" class="accent-green-500">
+        <input type="range" id="volume" min="0" max="100" value="70" class="accent-green-500 w-32">
       </div>
     </div>
 
-    <!-- Simulasi player audio (bisa diganti dengan embed Spotify API) -->
-    <audio id="player" class="hidden"></audio>
+    <audio id="player" class="hidden" controls></audio>
   </div>
 
   <!-- Request List -->
@@ -58,55 +57,70 @@
     const pauseBtn = document.getElementById('pauseBtn');
     const volumeSlider = document.getElementById('volume');
 
-    // Ambil daftar request
+    // Ambil daftar permintaan lagu
     window.firebaseOn(ref, snapshot => {
       listEl.innerHTML = '';
       snapshot.forEach(child => {
         const song = child.val();
+        const title = song.title;
+        const artist = song.artist;
+        const previewUrl = song.preview_url || "";
+
+        // Lewati lagu jika tidak punya preview
+        if (!previewUrl) return;
+
         const li = document.createElement('li');
         li.className = "flex justify-between items-center p-3 bg-white/5 border border-white/10 rounded";
+
         li.innerHTML = `
           <div>
-            <p class="font-semibold">${song.title}</p>
-            <p class="text-sm text-gray-300">${song.artist}</p>
+            <p class="font-semibold">${title}</p>
+            <p class="text-sm text-gray-300">${artist}</p>
           </div>
-          <button class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white" data-title="${song.title}" data-artist="${song.artist}">
+          <button class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-white"
+            data-title="${title}" data-artist="${artist}" data-url="${previewUrl}">
             ▶️ Putar
           </button>
         `;
+
         const btn = li.querySelector('button');
-        btn.addEventListener('click', () => playSong(song.title, song.artist));
+        btn.addEventListener('click', () => playSong(title, artist, previewUrl));
         listEl.appendChild(li);
       });
     });
 
-    // Fungsi memutar lagu (update ke DB)
-    function playSong(title, artist) {
+    // Simpan lagu yang diputar ke Firebase
+    function playSong(title, artist, url) {
       window.firebaseSet(nowPlayingRef, {
         title,
         artist,
+        preview_url: url,
         time: Date.now()
       });
     }
 
-    // Listen perubahan nowPlaying
+    // Dengarkan perubahan nowPlaying
     window.firebaseOn(nowPlayingRef, snap => {
       const data = snap.val();
       if (!data) {
         nowPlayingEl.textContent = 'Belum ada lagu';
         return;
       }
+
       nowPlayingEl.textContent = `${data.title} - ${data.artist}`;
-      // Simulasi audio src (bisa pakai API Spotify Preview jika tersedia)
-      player.src = `https://dummy.sound.com/${encodeURIComponent(data.title)}.mp3`; // replace with real
-      player.play();
+
+      if (data.preview_url) {
+        player.src = data.preview_url;
+        player.play();
+      } else {
+        player.src = '';
+        alert('Lagu ini tidak memiliki preview.');
+      }
     });
 
-    // Kontrol play/pause
+    // Tombol kontrol audio
     playBtn.addEventListener('click', () => player.play());
     pauseBtn.addEventListener('click', () => player.pause());
-
-    // Volume control
     volumeSlider.addEventListener('input', () => {
       player.volume = volumeSlider.value / 100;
     });
